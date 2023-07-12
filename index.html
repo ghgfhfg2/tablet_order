@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/common.css" />
+    <link rel="stylesheet" href="./css/content.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
+    />
+    <title>주문</title>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <!-- <div class="logo">logo</div> -->
+        <ul class="category">
+          <li onclick="onSelectCate(0)">전체</li>
+          <li onclick="onSelectCate(1)">카테고리1</li>
+          <li onclick="onSelectCate(2)">카테고리2</li>
+          <li onclick="onSelectCate(3)">카테고리3</li>
+          <li onclick="onSelectCate(4)">카테고리4</li>
+        </ul>
+      </header>
+      <div class="container">
+        <section class="product_section">
+          <ul class="product_list"></ul>
+        </section>
+        <section class="cart_section">
+          <h2>
+            장바구니<button
+              type="button"
+              class="btn_del"
+              onclick="onRemoveCart()"
+            >
+              <span class="material-symbols-outlined">delete</span>
+              전체삭제
+            </button>
+          </h2>
+          <ul class="cart_list"></ul>
+          <div class="cart_bttom_box">
+            <span class="price_box">
+              <span class="txt">합계 금액</span>
+              <span class="price">0원</span>
+            </span>
+            <button class="btn_order" type="button" onclick="onOrderSubmit()">
+              주문하기
+            </button>
+          </div>
+        </section>
+      </div>
+      <footer class="footer"></footer>
+    </div>
+  </body>
+  <script>
+    let prodList = [
+      {
+        name: "육개장1",
+        img: "./images/menu.jpg",
+        price: "1100000",
+        ea: "50인분",
+        category: 1,
+        uid: "test1",
+      },
+      {
+        name: "육개장2",
+        img: "./images/menu.jpg",
+        price: "1100000",
+        ea: "50인분",
+        category: 1,
+        uid: "test2",
+      },
+      {
+        name: "육개장3",
+        img: "./images/menu.jpg",
+        price: "1100000",
+        ea: "50인분",
+        category: 1,
+        uid: "test3",
+      },
+      {
+        name: "육개장4",
+        img: "./images/menu.jpg",
+        price: "1100000",
+        ea: "50인분",
+        category: 2,
+        uid: "test4",
+      },
+      {
+        name: "육개장5",
+        img: "./images/menu.jpg",
+        price: "1100000",
+        ea: "50인분",
+        category: 3,
+        uid: "test5",
+      },
+    ];
+
+    let currnetCate = 0;
+
+    const getProdList = (data, cate) => {
+      if (!data) return;
+      let list = ``;
+      if (cate) {
+        data = data.filter((el) => el.category == cate);
+      }
+      data.forEach((el) => {
+        list += `
+          <li data-uid=${el.uid} onclick="onCart('${el.uid}')">
+            <div class="img_box"><img src=${el.img} /></div>
+            <div class="tit_box">
+              <span class="tit">${el.name}</span>
+              <span class="info">단위 : ${el.ea}</span>
+              <span class="price">${new Intl.NumberFormat("ko-KR").format(
+                el.price
+              )}원</span>
+            </div>
+          </li>
+        `;
+      });
+      document.querySelector(".product_list").innerHTML = list;
+    };
+    getProdList(prodList);
+
+    //카테고리 선택
+    const onSelectCate = (uid) => {
+      currnetCate = uid;
+      getProdList(prodList, uid);
+    };
+
+    //가격 합계
+    const priceSum = () => {
+      const list = document.querySelectorAll(`.cart_list li`);
+      let sum = 0;
+      list.forEach((el) => {
+        const prod = prodList.find((el2) => el2.uid == el.dataset.uid);
+        sum += 1 * prod.price * el.querySelector("input").value;
+      });
+      document.querySelector(".cart_bttom_box .price_box .price").innerHTML = `
+        ${new Intl.NumberFormat("ko-KR").format(sum)}원
+      `;
+      console.log(sum);
+    };
+
+    //장바구니 담기
+    const onCart = (uid) => {
+      const prod = prodList.find((el) => el.uid == uid);
+      const cartList = document.querySelector(".cart_list");
+      const isUid = cartList.querySelector(`li[data-uid='${uid}']`);
+
+      if (isUid) {
+        isUid.querySelector("input").value++;
+      } else {
+        const list = `
+          <li data-uid=${prod.uid}>
+            <div class="prod_info">
+              <span class="tit">${prod.name}</span>
+              <span class="price">${new Intl.NumberFormat("ko-KR").format(
+                prod.price
+              )}원</span>
+            </div>
+            <div class="amount_box">
+              <button class="btn" type="button" onclick="onCartMinus('${
+                prod.uid
+              }')">-</button>
+              <input class="input" type="number" value="1" readonly />
+              <button class="btn" type="button" onclick="onCartPlus('${
+                prod.uid
+              }')">+</button>
+              <button class="btn del" type="button" onclick="onRemoveCart('${
+                prod.uid
+              }')">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </li>
+        `;
+        cartList.innerHTML += list;
+      }
+      priceSum();
+    };
+
+    //수량합계
+    const onModifySum = (uid, ea) => {
+      const li = document.querySelector(`.cart_list li[data-uid=${uid}]`);
+      const prod = prodList.find((el) => el.uid == uid);
+      li.querySelector(".price").innerHTML = `${new Intl.NumberFormat(
+        "ko-KR"
+      ).format(prod.price * ea)}원`;
+    };
+
+    //수량조절
+    const onCartMinus = (uid) => {
+      const li = document.querySelector(`.cart_list li[data-uid=${uid}] input`);
+      const value = li.value;
+      if (value == 1) {
+        alert("최소수량 입니다.");
+      } else {
+        li.value--;
+      }
+      onModifySum(uid, li.value);
+      priceSum();
+    };
+    const onCartPlus = (uid) => {
+      const input = document.querySelector(
+        `.cart_list li[data-uid=${uid}] input`
+      );
+      input.value++;
+      onModifySum(uid, input.value);
+      priceSum();
+    };
+
+    //장바구니 초기화
+    const cartReset = () => {
+      document.querySelectorAll(`.cart_list li`).forEach((el) => {
+        el.remove();
+      });
+    };
+
+    //장바구니 삭제
+    const onRemoveCart = (uid) => {
+      if (!uid) {
+        cartReset();
+      } else {
+        document.querySelector(`.cart_list li[data-uid=${uid}]`).remove();
+      }
+      priceSum();
+    };
+
+    //주문하기
+    const onOrderSubmit = () => {
+      const agree = confirm("주문 하시겠습니까?");
+      if (!agree) return;
+      const list = document.querySelectorAll(`.cart_list li`);
+      const listArr = [];
+      list.forEach((el) => {
+        const uid = el.dataset.uid;
+        const ea = el.querySelector("input").value;
+        let obj = {
+          uid,
+          ea,
+        };
+        listArr.push(obj);
+      });
+      alert("주문이 완료되었습니다.");
+      cartReset();
+      priceSum();
+      console.log(listArr);
+    };
+  </script>
+</html>
