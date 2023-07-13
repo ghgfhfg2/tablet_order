@@ -11,6 +11,13 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
     />
     <title>주문</title>
+    <script>
+      const place = localStorage.getItem("place");
+      const room = localStorage.getItem("room");
+      if (!place || !room) {
+        location.href = "/login.html";
+      }
+    </script>
   </head>
   <body>
     <div class="wrapper">
@@ -23,6 +30,16 @@
           <li onclick="onSelectCate(3)">카테고리3</li>
           <li onclick="onSelectCate(4)">카테고리4</li>
         </ul>
+        <button type="button" class="btn_my_menu" onclick="onMenuToggle()">
+          <span class="material-symbols-outlined"> account_circle </span>
+          <div class="menu_pop">
+            <ul>
+              <li onclick="onPopMyInfo()">내 정보</li>
+              <li onclick="onPopOrderList()">주문내역</li>
+              <li onclick="onPopLogout()">로그아웃</li>
+            </ul>
+          </div>
+        </button>
       </header>
       <div class="container">
         <section class="product_section">
@@ -53,6 +70,20 @@
       </div>
       <footer class="footer"></footer>
     </div>
+    <!-- 팝업 공통 -->
+    <div class="common_pop_box">
+      <div class="con_box">
+        <div class="header">
+          <h2></h2>
+          <button class="btn_close" onclick="closePop('.common_pop_box')">
+            <span class="material-symbols-outlined"> close </span>
+          </button>
+        </div>
+        <div class="body">ss</div>
+      </div>
+      <div class="bg_box" onclick="closePop('.common_pop_box')"></div>
+    </div>
+    <!-- 주문내역 팝업 -->
   </body>
   <script>
     let prodList = [
@@ -123,6 +154,93 @@
       document.querySelector(".product_list").innerHTML = list;
     };
     getProdList(prodList);
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".btn_my_menu")) {
+        onMenuToggle(1);
+      }
+    });
+
+    //팝업열기
+    const openPop = (target) => {
+      document.querySelector(target).classList.add("on");
+    };
+    //팝업닫기
+    const closePop = (target) => {
+      document.querySelector(target).classList.remove("on");
+      const title = document.querySelector(".common_pop_box .header h2");
+      title.innerText = ``;
+    };
+
+    //내정보 팝업
+    const onPopMyInfo = () => {
+      const title = document.querySelector(".common_pop_box .header h2");
+      title.innerText = `내 정보`;
+      openPop(".common_pop_box");
+    };
+    //주문내역 팝업
+    const onPopOrderList = () => {
+      const title = document.querySelector(".common_pop_box .header h2");
+      title.innerText = `주문내역`;
+      openPop(".common_pop_box");
+    };
+    //로그아웃 팝업
+    const onPopLogout = () => {
+      const title = document.querySelector(".common_pop_box .header h2");
+      title.innerText = `로그아웃`;
+      const body = document.querySelector(".common_pop_box .body");
+
+      body.innerHTML = `
+      <div class="login__wrap logout">
+          <div class="input_box">
+            <input
+              class="custom_input"
+              type="text"
+              id="place"
+              placeholder="장례식장"
+            />
+          </div>
+          <div class="input_box">
+            <input
+              class="custom_input"
+              type="text"
+              id="room"
+              placeholder="빈소"
+            />
+          </div>
+          <button type="button" onclick="onLogout()" class="btn_basic btn_login">
+            로그아웃
+          </button>
+        </div>
+      `;
+      openPop(".common_pop_box");
+    };
+
+    const onLogout = () => {
+      const place = document.querySelector("#place").value;
+      const room = document.querySelector("#room").value;
+      const localData = {
+        place: localStorage.getItem("place"),
+        room: localStorage.getItem("room"),
+      };
+      if (place == localData.place && room == localData.room) {
+        localStorage.removeItem("place");
+        localStorage.removeItem("room");
+        location.href = "/login.html";
+      } else {
+        alert("정보가 올바르지 않습니다.");
+      }
+    };
+
+    //메뉴토글
+    const onMenuToggle = (close) => {
+      const btn = document.querySelector(".btn_my_menu");
+      if (close) {
+        btn.classList.remove("on");
+      } else {
+        btn.classList.toggle("on");
+      }
+    };
 
     //카테고리 선택
     const onSelectCate = (uid) => {
